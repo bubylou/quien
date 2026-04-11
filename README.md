@@ -6,12 +6,20 @@ A better WHOIS lookup tool. Interactive TUI with tabbed views for WHOIS, DNS, ma
 
 ## Install
 
+**Homebrew**
+
 ```
 brew tap retlehs/tap
 brew install retlehs/tap/quien
 ```
 
-Or with Go:
+**Ubuntu / Debian**
+
+```
+curl -fsSL https://apt.quien.dev/install.sh | sudo sh
+```
+
+**Go**
 
 ```
 go install github.com/retlehs/quien@latest
