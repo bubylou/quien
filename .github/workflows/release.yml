@@ -193,5 +193,33 @@ jobs:
 
           gpg --armor --export "$GPG_KEY_ID" > aptrepo/pubkey.gpg
 
+          cat > aptrepo/install.sh <<'SH'
+          #!/bin/sh
+          set -eu
+
+          KEYRING=/usr/share/keyrings/quien.gpg
+          SOURCES=/etc/apt/sources.list.d/quien.list
+
+          if [ "$(id -u)" -ne 0 ]; then
+            echo "This script must be run as root (try: curl -fsSL https://apt.quien.dev/install.sh | sudo sh)" >&2
+            exit 1
+          fi
+
+          echo "Installing quien apt repository..."
+
+          curl -fsSL https://apt.quien.dev/pubkey.gpg | gpg --dearmor -o "$KEYRING"
+          chmod 644 "$KEYRING"
+
+          echo "deb [signed-by=$KEYRING] https://apt.quien.dev stable main" > "$SOURCES"
+          chmod 644 "$SOURCES"
+
+          apt-get update
+          apt-get install -y quien
+
+          echo ""
+          echo "quien installed. Try: quien google.com"
+          SH
+          chmod +x aptrepo/install.sh
+
       - name: Sync apt repository to R2
         run: rclone sync ./aptrepo r2:quien-apt
