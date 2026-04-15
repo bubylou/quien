@@ -1,5 +1,9 @@
 # quien
 
+[![Build status](https://img.shields.io/github/actions/workflow/status/retlehs/quien/ci.yml?branch=main&style=flat-square)](https://github.com/retlehs/quien/actions)
+![GitHub release](https://img.shields.io/github/release/retlehs/quien?style=flat-square)
+![GitHub downloads](https://img.shields.io/github/downloads/retlehs/quien/total?label=github%20downloads&style=flat-square)
+
 A better WHOIS lookup tool. Interactive TUI with tabbed views for WHOIS, DNS, mail, SSL/TLS, HTTP headers, tech stack detection, and SEO analysis.
 
 ![quien demo](demo.gif)
