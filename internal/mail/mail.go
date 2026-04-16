@@ -1,13 +1,16 @@
 package mail
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	mdns "github.com/miekg/dns"
+	"github.com/retlehs/quien/internal/dnsutil"
 )
 
 type Records struct {
@@ -149,6 +152,72 @@ func Lookup(domain string) (*Records, error) {
 	return records, nil
 }
 
+// MXResolution pairs an MX host with its resolved IP addresses (and reverse DNS).
+type MXResolution struct {
+	Host string
+	IPs  []MXIP
+	Err  string
+}
+
+type MXIP struct {
+	IP  string
+	PTR string
+}
+
+// ResolveMX looks up A/AAAA records and reverse DNS for each MX host concurrently.
+func ResolveMX(hosts []string) []MXResolution {
+	out := make([]MXResolution, len(hosts))
+	resolver := resolverForMX()
+	var wg sync.WaitGroup
+	for i, h := range hosts {
+		wg.Add(1)
+		go func(i int, host string) {
+			defer wg.Done()
+			out[i].Host = host
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
+			defer cancel()
+			addrs, err := resolver.LookupIPAddr(ctx, host)
+			if err != nil {
+				out[i].Err = err.Error()
+				return
+			}
+			ips := make([]MXIP, len(addrs))
+			var inner sync.WaitGroup
+			for j, a := range addrs {
+				ips[j].IP = a.IP.String()
+				inner.Add(1)
+				go func(j int, ip string) {
+					defer inner.Done()
+					rctx, rcancel := context.WithTimeout(context.Background(), timeout)
+					defer rcancel()
+					names, err := resolver.LookupAddr(rctx, ip)
+					if err == nil && len(names) > 0 {
+						ips[j].PTR = strings.TrimSuffix(names[0], ".")
+					}
+				}(j, ips[j].IP)
+			}
+			inner.Wait()
+			out[i].IPs = ips
+		}(i, h)
+	}
+	wg.Wait()
+	return out
+}
+
+func resolverForMX() *net.Resolver {
+	target := findResolver()
+	dialer := &net.Dialer{Timeout: timeout}
+	return &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
+			if strings.HasPrefix(network, "tcp") {
+				return dialer.DialContext(ctx, "tcp", target)
+			}
+			return dialer.DialContext(ctx, "udp", target)
+		},
+	}
+}
+
 func query(name string, qtype uint16, resolver string) ([]mdns.RR, error) {
 	msg := new(mdns.Msg)
 	msg.SetQuestion(name, qtype)
@@ -174,9 +243,5 @@ func query(name string, qtype uint16, resolver string) ([]mdns.RR, error) {
 }
 
 func findResolver() string {
-	config, err := mdns.ClientConfigFromFile("/etc/resolv.conf")
-	if err == nil && len(config.Servers) > 0 {
-		return net.JoinHostPort(config.Servers[0], config.Port)
-	}
-	return "1.1.1.1:53"
+	return dnsutil.FindResolver()
 }

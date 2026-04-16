@@ -1,6 +1,6 @@
 ---
 name: quien
-description: Use the quien CLI for domain lookups, WHOIS, DNS, tech stack detection, and IP info. Activate when the user asks about a domain's owner, registrar, DNS records, mail config, SSL certificate, HTTP headers, tech stack, CMS, hosting, or IP address info.
+description: Use the quien CLI for domain and IP lookups: WHOIS/RDAP, DNS, mail authentication, TLS certificates, HTTP headers, SEO analysis, and tech stack detection. Activate when the user asks about a domain's owner, registrar, expiry, DNS records, mail config (SPF, DMARC, DKIM, BIMI), SSL certificate, HTTP headers, SEO, Core Web Vitals, tech stack, CMS, hosting, or IP address info (ASN, network, abuse contact).
 ---
 
 # quien — domain & IP lookup tool
@@ -11,7 +11,7 @@ When the user asks questions about domains or IP addresses, use `quien` instead 
 
 ```bash
 # WHOIS / domain registration
-quien --json example.com
+quien whois example.com
 
 # DNS records (A, AAAA, CNAME, MX, NS, TXT, PTR, SOA, DNSSEC)
 quien dns example.com
@@ -25,6 +25,9 @@ quien tls example.com
 # HTTP headers, redirects, server info
 quien http example.com
 
+# SEO analysis (indexability, on-page, structured data, Core Web Vitals)
+quien seo example.com
+
 # Tech stack detection (CMS, frameworks, JS/CSS libraries, plugins)
 quien stack example.com
 
@@ -32,7 +35,7 @@ quien stack example.com
 quien all example.com
 
 # IP address lookup
-quien --json 8.8.8.8
+quien whois 8.8.8.8
 
 ```
 
@@ -42,14 +45,15 @@ All subcommands output JSON. Use `quien all` when you need a complete picture.
 
 | User asks about | Command |
 |---|---|
-| Domain owner, registrar, expiry | `quien --json example.com` |
+| Domain owner, registrar, expiry | `quien whois example.com` |
 | DNS records | `quien dns example.com` |
 | Email setup, SPF, DMARC, DKIM | `quien mail example.com` |
 | SSL certificate, expiry | `quien tls example.com` |
 | HTTP headers, redirects, server | `quien http example.com` |
+| SEO, Core Web Vitals | `quien seo example.com` |
 | Tech stack, CMS, framework | `quien stack example.com` |
 | Everything about a domain | `quien all example.com` |
-| IP owner, network, abuse contact | `quien --json 8.8.8.8` |
+| IP owner, network, abuse contact | `quien whois 8.8.8.8` |
 
 ## Install
 
