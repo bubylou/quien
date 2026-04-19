@@ -17,7 +17,7 @@
             {buildGoModule}:
               buildGoModule (finalAttrs: {
                 pname = "quien";
-                version = "v0.7.1";
+                version = "v0.7.2";
                 vendorHash = "sha256-q1HAlPIYe/nd5pYW+vZIABxfASlcFXhGNV71SY2ggsc=";
                 src = ./.;
 
@@ -30,9 +30,10 @@
               })
           ) {};
         };
+
         apps = rec {
-          quien = flake-utils.lib.mkApp {drv = self.packages.${system}.quien;};
           default = quien;
+          quien = flake-utils.lib.mkApp {drv = self.packages.${system}.quien;};
         };
       }
     );
