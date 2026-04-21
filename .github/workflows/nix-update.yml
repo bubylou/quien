@@ -1,0 +1,31 @@
+name: Update Nix Flake
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: ${{ !github.event.release.prerelease && !github.event.release.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: refs/heads/main
+
+      - uses: cachix/install-nix-action@616559265b40713947b9c190a8ff4b507b5df49b # v31.10.4
+
+      - name: Update flake
+        env:
+          VERSION: ${{ github.event.release.tag_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          nix run github:Mic92/nix-update/3199e0f61d2517ea0639f4815c40903e8e92fc24 -- \
+            --version "$VERSION" --flake --commit quien
+          git push origin HEAD:main
