@@ -31,6 +31,12 @@ curl -fsSL https://apt.quien.dev/install.sh | sudo sh
 yay -S quien
 ```
 
+**NixOS / Nix (Flake)**
+
+```
+nix shell github:retlehs/quien
+```
+
 **Go**
 
 ```
